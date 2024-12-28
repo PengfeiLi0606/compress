@@ -1,0 +1,53 @@
+
+This is the code released in the Li et al. (2025), which should be cited if one uses the code.
+
+# ##
+This directory contains the source code and more for the executable "compress".  It requires a Fortran compiler, which is assumed to be gfortran, otherwise it should be self-contained, that is no external libraries are required. Most of the source code is held in the directory COMPRESS/SRC/cmplib, and the needed non-commercial software packages are provided in COMPRESS/SRC/utils.  
+
+1. Compile
+
+To use the code, the user should first enter the directory COMPRESS/SRC/cmplib and run
+./rebuild
+which will create a compiled library COMPRESS/lib/cmplib.a. Then enter the directory COMPRESS/SRC/utils and run
+./rebuild
+which will create a compiled library COMPRESS/lib/libutils.a. Then the user should enter the directory COMPRESS/SRC/progs, and run 
+./comp.s
+which will compile the main program and link it to the previously prepared libraries. An executable file "compress" will be generated/updated in the directory COMPRESS/. 
+
+2. Input data requirements
+
+The code requires two input data files: baryonic mass profiles and rotation curves. The data file for mass profiles should be put in the directory data/MassModeling/ and prepared in the format:
+Radius, Vgas, Vdisk, Vbulge,  SB_gas,  SB_disk,   SB_bul
+(kpc)  (km/s) (km/s) (km/s) (Ms/pc^2) (Ms/pc^2)  (Ms/pc^2)  
+The gas contribution is solely from Hydrogen, and a factor of 1.33 is included in the code to account for the contribution of Helium. Vdisk, Vbulge, SB_disk, SB_bul assume the stellar mass-to-light ratio is one. The input parameters M/L for bulge and disk will automatically correct their mass values. If there are no gas or bulge, users simply put 0.0 in the corresponding columns. 
+
+The data file for rotation curves should be put in the directory data/RotationCurve/ and prepared in the format:
+Radius, Vobs,  error
+(kpc)  (km/s) (km/s)
+The length of the data file does not need to match that of mass profiles. It's not essential for compression, but only for the purpose of comparison between predicted and observed rotation velocities. If the user does not care the comparison, one can simply set a random dataset for input (with non-vanishing radius and error).
+
+3. Setup the initial dark matter halo
+
+The file "input.dat" specifies the halo model. The current supported halo models are NFW and Einasto. For Einasto, one would need to specify the shape parameter right after the model name "einasto", e.g.
+type     eina     2.33
+The mass and length scales can be fixed at 1.0. The trucation radius is usually 15 times the scale radius, which can be modified.
+The distribution function is from the Eddition inversion formula.
+
+4. Run the code
+
+To run the code, one needs the executable file "compress", which should be present after compilation. For the first run, it will generate "E0tab.dat" and "run.log". "E0tab.dat" is a table specifying each halo model, and "run.log" records each run. Use the following command to run the code,
+./compress Galaxy_Name, hmass, rs, ML_disk, ML_bulge
+Galaxy_Name should be the name of the input file. For example, the input mass profiles is "MW_McGaugh19.dat", then Galaxy_Name should be "MW_McGaugh19". hmass is scale halo mass defined as 4pi*rhos*rs^3/10**10 solar mass for NFW, 16pi*rhos*rs^3/10**10 solar mass for Einasto. rs is the halo scale radius in kpc. ML_disk and ML_bulge are stellar mass-to-light ratios for disks and bulge, respectively. In case of no bulges, simply set ML_bulge = 0.
+
+5. Outputs
+
+The code will generate two output files in the folder "output/": 
+(1) "Galaxy_Name.out" stores:
+radius (Rkpc), rotation velocity from uncompressed halos (V_uh), rotation velocity of total baryonic contribution (V_b), rotation velocity from compressed halos (V_ch), colume density for compressed halos (r2rho), rotation velocity for disks (V_disk), gas (V_gas), bulge (V_bulge).
+(2) "Galaxy_Name_ML_disk_ML_bulge_hmass_rs.fitquality" stores:
+reduced chi^2 (chi^2/nobs), number of data points (nobs)
+The name for this output file is to distinguish different runs so that one can run parallel computations.  
+
+The "compress" code can be implemented into MCMC. An example code is provided to help users get started. 
+
+

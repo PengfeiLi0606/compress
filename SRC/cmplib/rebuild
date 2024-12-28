@@ -1,0 +1,25 @@
+#!/bin/sh
+# remove old version
+rm -f ../../lib/cmplib.a
+gfortran -c -w data_array.f
+# get names of all fortran files in this directory
+ls *.f > aaa
+# remove suffix ".f" from all
+cut -d. -f1 aaa > aab
+rm -f aaa
+# work through list of files
+for i in `cat aab`
+do
+  gfortran -c -fallow-argument-mismatch -w -O ${i}.f
+  if [ "$?" != 0 ] ; then
+    echo ${i} "failed"
+#  else
+#    echo "done" ${i}
+  fi
+done
+rm -f aarrays.o data_array.o
+# create library and clean up
+ar r ../../lib/cmplib.a *.o
+rm -f *.o aab *.mod
+ranlib ../../lib/cmplib.a
+chmod go+r ../../lib/cmplib.a

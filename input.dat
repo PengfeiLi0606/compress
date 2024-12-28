@@ -1,0 +1,5 @@
+#
+type            eina     2.33    # halo type, optional halo parameter
+mass            1.0             # mass scale in this pop
+scale           1        15.0   # length scale and truncation rad of this pop
+dftype          eddi     0.     # DF type and optional 2 extra params
